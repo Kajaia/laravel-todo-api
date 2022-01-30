@@ -16,7 +16,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::apiResources([
-    'lists' => CategoryController::class,
-    'tasks' => TaskController::class
-]);
+Route::group(['middleware' => 'cors'], function() {
+    Route::apiResources([
+        'lists' => CategoryController::class,
+        'tasks' => TaskController::class
+    ]);
+});
