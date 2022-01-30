@@ -51,7 +51,8 @@ class CategoryController extends Controller
      */
     public function show($id)
     {
-        $list = Category::findorfail($id);
+        $list = Category::with('tasks')
+            ->findorfail($id);
 
         return new CategoryResource($list);
     }
