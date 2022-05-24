@@ -18,6 +18,13 @@ class TaskController extends Controller
         $tasks = Task::when($request->search, function($query) use ($request) {
                 $query->where('title', 'LIKE', "%$request->search%");
             })
+            ->when($request->status, function($query) use ($request) {
+                if($request->status === 'active') {
+                    $query->where('status', false);
+                } elseif($request->status === 'completed') {
+                    $query->where('status', true);
+                }
+            })
             ->orderBy($request->sortBy ?? 'id', $request->sortDirection ?? 'desc')
             ->paginate($request->paginate ?? 10);
 
@@ -65,8 +72,7 @@ class TaskController extends Controller
         $task = Task::findorfail($id);
 
         $task->update([
-            'title' => $request->title,
-            'status' => $request->status
+            'title' => $request->title
         ]);
 
         return new TaskResource($task);
@@ -85,5 +91,27 @@ class TaskController extends Controller
         $task->delete();
 
         return new TaskResource($task);
+    }
+
+    public function doneUndo($id)
+    {
+        $task = Task::findorfail($id);
+
+        if($task->status) {
+            $task->update(['status' => 0]);
+        } else {
+            $task->update(['status' => 1]);
+        }
+
+        return new TaskResource($task);
+    }
+
+    public function clearCompleted() {
+        $tasks = Task::where('status', true)
+            ->delete();
+
+        return [
+            'status' => 'cleared'
+        ];
     }
 }
