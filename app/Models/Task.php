@@ -11,16 +11,11 @@ class Task extends Model
 
     protected $fillable = [
         'title',
-        'status',
-        'list_id'
+        'status'
     ];
 
     protected $hidden = [
         'created_at',
         'updated_at'
     ];
-
-    public function category() {
-        return $this->belongsTo(Category::class);
-    }
 }

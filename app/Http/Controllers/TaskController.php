@@ -13,10 +13,13 @@ class TaskController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $tasks = Task::orderBy('id', 'desc')
-            ->get();
+        $tasks = Task::when($request->search, function($query) use ($request) {
+                $query->where('title', 'LIKE', "%$request->search%");
+            })
+            ->orderBy($request->sortBy ?? 'id', $request->sortDirection ?? 'desc')
+            ->paginate($request->paginate ?? 10);
 
         return TaskResource::collection($tasks);
     }
@@ -31,8 +34,7 @@ class TaskController extends Controller
     {
         $task = Task::create([
             'title' => $request->title,
-            'status' => $request->status,
-            'list_id' => $request->list_id
+            'status' => $request->status
         ]);
 
         return new TaskResource($task);
@@ -64,8 +66,7 @@ class TaskController extends Controller
 
         $task->update([
             'title' => $request->title,
-            'status' => $request->status,
-            'list_id' => $request->list_id
+            'status' => $request->status
         ]);
 
         return new TaskResource($task);

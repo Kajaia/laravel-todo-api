@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Route;
 
@@ -15,9 +14,4 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::group(['middleware' => 'cors'], function() {
-    Route::apiResources([
-        'lists' => CategoryController::class,
-        'tasks' => TaskController::class
-    ]);
-});
+Route::apiResource('tasks', TaskController::class);

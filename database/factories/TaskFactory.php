@@ -15,8 +15,7 @@ class TaskFactory extends Factory
     {
         return [
             'title' => ucfirst($this->faker->word()) . ' ' . $this->faker->word() . ' ' . $this->faker->word(),
-            'status' => $this->faker->boolean(),
-            'list_id' => $this->faker->numberBetween(1, 10)
+            'status' => $this->faker->boolean()
         ];
     }
 }

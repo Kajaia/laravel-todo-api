@@ -17,7 +17,6 @@ class CreateTasksTable extends Migration
             $table->id();
             $table->string('title');
             $table->boolean('status')->default(0);
-            $table->foreignId('list_id')->constrained('categories')->onDelete('cascade');
             $table->timestamps();
         });
     }
