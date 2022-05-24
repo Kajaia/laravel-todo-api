@@ -13,16 +13,14 @@ class CategoryController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $search = request('search') ?? null;
-        $sortBy = request('sortBy') ?? 'id';
-        $sortDirection = request('sortDirection') ?? 'desc';
-
         $lists = Category::with('tasks')
-            ->where('title', 'LIKE', "%$search%")
-            ->orderBy($sortBy, $sortDirection)
-            ->get();
+            ->when($request->search, function($query) use ($request) {
+                $query->where('title', 'LIKE', "%$request->search%");
+            })
+            ->orderBy($request->sortBy ?? 'id', $request->sortDirection ?? 'desc')
+            ->paginate($request->paginate ?? 10);
 
         return CategoryResource::collection($lists);
     }
@@ -52,7 +50,7 @@ class CategoryController extends Controller
     public function show($id)
     {
         $list = Category::with('tasks')
-            ->findorfail($id);
+            ->findOrFail($id);
 
         return new CategoryResource($list);
     }
@@ -66,7 +64,7 @@ class CategoryController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $list = Category::findorfail($id);
+        $list = Category::findOrFail($id);
 
         $list->update([
             'title' => $request->title,
@@ -84,7 +82,7 @@ class CategoryController extends Controller
      */
     public function destroy($id)
     {
-        $list = Category::findorfail($id);
+        $list = Category::findOrFail($id);
 
         $list->delete();
 
