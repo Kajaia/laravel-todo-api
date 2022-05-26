@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::put('tasks/{id}', [TaskController::class, 'doneUndo'])
-    ->whereNumber('id');
-Route::post('tasks/clear', [TaskController::class, 'clearCompleted']);
 Route::apiResource('tasks', TaskController::class);
+Route::post('tasks/clear', [TaskController::class, 'clear']);
+Route::put('tasks/{id}/done', [TaskController::class, 'done'])->whereNumber('id');

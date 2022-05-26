@@ -4,31 +4,27 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\TaskResource;
 use App\Models\Task;
+use App\Services\TaskService;
 use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
+    protected Request $request;
+    protected TaskService $service;
+
+    public function __construct(Request $request, TaskService $service)
+    {
+        $this->request = $request;
+        $this->service = $service;
+    }
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request)
+    public function index(Task $task)
     {
-        $tasks = Task::when($request->search, function($query) use ($request) {
-                $query->where('title', 'LIKE', "%$request->search%");
-            })
-            ->when($request->status, function($query) use ($request) {
-                if($request->status === 'active') {
-                    $query->where('status', false);
-                } elseif($request->status === 'completed') {
-                    $query->where('status', true);
-                }
-            })
-            ->orderBy($request->sortBy ?? 'id', $request->sortDirection ?? 'desc')
-            ->paginate($request->paginate ?? 10);
-
-        return TaskResource::collection($tasks);
+        return TaskResource::collection($task->getFilteredTasks($this->request));
     }
 
     /**
@@ -37,14 +33,9 @@ class TaskController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store()
     {
-        $task = Task::create([
-            'title' => $request->title,
-            'status' => $request->status
-        ]);
-
-        return new TaskResource($task);
+        return new TaskResource($this->service->createTask());
     }
 
     /**
@@ -55,9 +46,7 @@ class TaskController extends Controller
      */
     public function show($id)
     {
-        $task = Task::findorfail($id);
-
-        return new TaskResource($task);
+        return new TaskResource(Task::findorfail($id));
     }
 
     /**
@@ -67,15 +56,9 @@ class TaskController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Task $task)
     {
-        $task = Task::findorfail($id);
-
-        $task->update([
-            'title' => $request->title
-        ]);
-
-        return new TaskResource($task);
+        return new TaskResource($this->service->updateTaskTitle($task->id));
     }
 
     /**
@@ -86,32 +69,15 @@ class TaskController extends Controller
      */
     public function destroy($id)
     {
-        $task = Task::findorfail($id);
-
-        $task->delete();
-
-        return new TaskResource($task);
+        return response()->json(Task::findorfail($id)->delete());
     }
 
-    public function doneUndo($id)
+    public function done($id)
     {
-        $task = Task::findorfail($id);
-
-        if($task->status) {
-            $task->update(['status' => 0]);
-        } else {
-            $task->update(['status' => 1]);
-        }
-
-        return new TaskResource($task);
+        return $this->service->doneTask($id);
     }
 
-    public function clearCompleted() {
-        $tasks = Task::where('status', true)
-            ->delete();
-
-        return [
-            'status' => 'cleared'
-        ];
+    public function clear() {
+        return response()->json(Task::where('status', true)->delete());
     }
 }
