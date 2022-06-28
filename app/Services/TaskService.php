@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use App\Events\TaskAdded;
+use App\Events\TaskDone;
+use App\Events\TaskUpdated;
 use App\Models\Task;
 use Illuminate\Http\Request;
 
@@ -21,6 +24,8 @@ class TaskService {
             'status' => $this->request->status
         ]);
 
+        event(new TaskAdded);
+
         return $task;
     }
 
@@ -29,6 +34,8 @@ class TaskService {
         $task = Task::findorfail($id);
 
         $task->update(['title' => $this->request->title]);
+
+        event(new TaskUpdated);
 
         return $task;
     }
@@ -42,6 +49,8 @@ class TaskService {
         } else {
             $task->update(['status' => 1]);
         }
+
+        event(new TaskDone);
 
         return $task;
     }

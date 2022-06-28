@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\TaskDeleted;
+use App\Events\TasksCleared;
 use App\Http\Resources\TaskResource;
 use App\Models\Task;
 use App\Services\TaskService;
@@ -69,7 +71,11 @@ class TaskController extends Controller
      */
     public function destroy($id)
     {
-        return response()->json(Task::findorfail($id)->delete());
+        $task = Task::findorfail($id)->delete();
+
+        event(new TaskDeleted);
+
+        return response()->json($task);
     }
 
     public function done($id)
@@ -78,6 +84,10 @@ class TaskController extends Controller
     }
 
     public function clear() {
-        return response()->json(Task::where('status', true)->delete());
+        $tasks = Task::where('status', true)->delete();
+
+        event(new TasksCleared);
+
+        return response()->json($tasks);
     }
 }
